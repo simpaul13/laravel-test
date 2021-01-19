@@ -8,6 +8,16 @@ use App\Models\Post;
 class PostsController extends Controller
 {
     /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth', ['except' => ['index', 'show']]);
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
@@ -75,6 +85,15 @@ class PostsController extends Controller
         // return Post::all();
 
         $post = Post::find($id);
+        //Check if post exists before deleting
+        if (!isset($post)) {
+            return redirect('/posts')->with('error', 'No Post Found');
+        }
+
+        // Check for correct user
+        if (auth()->user()->id !== $post->user_id) {
+            return redirect('/posts')->with('error', 'Unauthorized Page');
+        }
         return view('posts.edit')->with('post', $post);
     }
 
